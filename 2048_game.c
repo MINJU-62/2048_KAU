@@ -23,7 +23,10 @@
 
 static const char *usage =
 	"2048: A sliding tile puzzle game\n\n"
-	"Usage: %s [-r R] [-p P] [-s SEED] [-h]\n\n"
+	"Usage: %s [-m M] [-r R] [-p P] [-s SEED] [-h]\n\n"
+	"\t-m\tM\tGame mode M\n"
+	"\t\t\t[1]: Normal mode\n"
+	"\t\t\t[2]: Bomb mode (Start with a bomb tile 0 which moves but won't be combined) \n"
 	"\t-r\tR\tRecord to file R\n"
 	"\t-p\tP\tPlay back from file P\n"
 	"\t-s\tSEED \tUse SEED for the random number generator\n"
@@ -37,13 +40,19 @@ struct game {
 	tile board[NROWS][NCOLS];
 };
 
+// tiles for new mode
+typedef enum {
+    Number,
+    Bomb
+} TileType;
+
 static FILE *recfile = NULL, *playfile = NULL;
 static int batch_mode;
 static int delay_ms = 250;
 
 // place_tile() returns 0 if it did place a tile and -1 if there is no open
 // space.
-int place_tile(struct game *game)
+int place_tile(struct game *game, TileType tile_type)
 {
 	// lboard is the "linear board" -- no need to distinguish rows/cols
 	tile *lboard = (tile *)game->board;
@@ -64,8 +73,14 @@ int place_tile(struct game *game)
 	// Find the insertion point and place the new tile
 	for (i = 0; i < NROWS * NCOLS; i++) {
 		if (!lboard[i] && !(loc--)) {
-			lboard[i] = random() % 10 ? 1 : 2;
-			return 0;
+			switch(tile_type){
+				case Number:
+					lboard[i] = random() % 10 ? 1 : 2;
+					return 0;
+				case Bomb:
+					lboard[i] = 15;  // Bomb num = 15
+					return 0;
+			}
 		}
 	}
 	assert(0);
@@ -78,7 +93,13 @@ void print_tile(int tile)
 			attron(A_BOLD);
 		int pair = COLOR_PAIR(1 + (tile % 6));
 		attron(pair);
-		printw("%4d", 1 << tile);
+		// Bomb tile
+		if (tile == 15){
+			attron(A_BOLD);
+			printw("%4d", 0);
+		} else {
+			printw("%4d", 1 << tile);
+		}
 		attroff(pair);
 		attroff(A_BOLD);
 	}
@@ -273,8 +294,13 @@ int main(int argc, char **argv)
 	time_t seed = time(NULL);
 	int opt;
 
-	while ((opt = getopt(argc, argv, "hr:p:s:d:")) != -1) {
+	int game_mode = 0;
+
+	while ((opt = getopt(argc, argv, "hr:p:s:d:m:")) != -1) {
 		switch (opt) {
+		case 'm': // 이 부분 추가함
+			game_mode = atoi(optarg);
+			break;
 		case 'r':
 			recfile = fopen_or_die(optarg, "w");
 			break;
@@ -297,8 +323,12 @@ int main(int argc, char **argv)
 	}
 
 	srandom(seed);
-	place_tile(&game);
-	place_tile(&game);
+
+	place_tile(&game, Number);
+	if (game_mode == 2) {  // Bomb mode
+		place_tile(&game, Bomb);
+	}
+	place_tile(&game, Number);
 	batch_mode = recfile && playfile;
 
 	if (!batch_mode) {
@@ -329,7 +359,7 @@ int main(int argc, char **argv)
 		}
 
 		if (last_turn != game.turns) {
-			place_tile(&game);
+			place_tile(&game, Number);
 			record(key, &game);
 		}
 	}

@@ -319,10 +319,10 @@ int main(int argc, char **argv)
 
 		int key = get_input();
 		switch (key) {
-		case 'a': case KEY_LEFT: move_left(&game); break;
-		case 's': case KEY_DOWN: move_down(&game); break;
-		case 'w': case KEY_UP: move_up(&game); break;
-		case 'd': case KEY_RIGHT: move_right(&game); break;
+		case KEY_LEFT: move_left(&game); break;
+		case KEY_DOWN: move_down(&game); break;
+		case KEY_UP: move_up(&game); break;
+		case KEY_RIGHT: move_right(&game); break;
 		case 'q':
 			exit_msg = "quit";
 			goto end;

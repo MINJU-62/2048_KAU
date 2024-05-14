@@ -89,18 +89,22 @@ int place_tile(struct game *game, TileType tile_type)
 void print_tile(int tile)
 {
 	if (tile) {
-		if (tile < 6)
+		if (tile < 6) {
 			attron(A_BOLD);
-		int pair = COLOR_PAIR(1 + (tile % 6));
-		attron(pair);
-		// Bomb tile
-		if (tile == 15){
-			attron(A_BOLD);
-			printw("%4d", 0);
-		} else {
-			printw("%4d", 1 << tile);
 		}
-		attroff(pair);
+		// Bomb tile
+		if (tile == 15) {
+			int pair = COLOR_PAIR(7);
+			attron(pair);
+			attron(A_BOLD);
+			printw("   X");
+			attroff(pair);
+		} else {
+			int pair = COLOR_PAIR(1 + (tile % 6));
+			attron(pair);
+			printw("%4d", 1 << tile);
+			attroff(pair);
+		}
 		attroff(A_BOLD);
 	}
 	else {
@@ -233,12 +237,13 @@ void init_curses()
 	curs_set(0);
 
 	bg = use_default_colors() == OK ? -1 : 0;
-	init_pair(1, COLOR_RED, bg);
+	init_pair(1, COLOR_WHITE, bg);
 	init_pair(2, COLOR_GREEN, bg);
 	init_pair(3, COLOR_YELLOW, bg);
 	init_pair(4, COLOR_BLUE, bg);
 	init_pair(5, COLOR_MAGENTA, bg);
 	init_pair(6, COLOR_CYAN, bg);
+	init_pair(7, COLOR_RED, bg);
 }
 
 int max_tile(const tile *lboard)
@@ -298,7 +303,7 @@ int main(int argc, char **argv)
 
 	while ((opt = getopt(argc, argv, "hr:p:s:d:m:")) != -1) {
 		switch (opt) {
-		case 'm': // 이 부분 추가함
+		case 'm': // game mode
 			game_mode = atoi(optarg);
 			break;
 		case 'r':

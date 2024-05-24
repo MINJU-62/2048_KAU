@@ -152,18 +152,18 @@ int combine_left(struct game *game, tile row[NCOLS])
 			if (row[c-1] == 16 && row[c] == 16) { // chance-chance combine -> becomes 2
 				row[c-1] = 2;
 				row[c] = 0;
-				game->score += 1 << (row[c-1] - 1);
+				game->score += 2 << (row[c-1] - 1);
 				did_combine = 1;
 			} else if (row[c-1] == row[c]) {
 				row[c-1]++;
 				row[c] = 0;
-				game->score += 1 << (row[c-1] - 1);
+				game->score += 2 << (row[c-1] - 1);
 				did_combine = 1;
 			} else if (row[c-1] == 16 || row[c] == 16) { // chance-number combine 
 				tile combined_num = row[c-1] == 16 ? row[c] : row[c-1]; // to find combined number
 				row[c-1] = combined_num + 1;
 				row[c] = 0;
-				game->score += 1 << (row[c-1] - 1);
+				game->score += 2 << (row[c-1] - 1);
 				did_combine = 1;
 			}
 		}

@@ -109,7 +109,7 @@ int combine_left(struct game *game, tile row[NCOLS])
 		if (row[c] && row[c-1] == row[c]) {
 			row[c-1]++;
 			row[c] = 0;
-			game->score += 1 << (row[c-1] - 1);
+			game->score += 2 << (row[c-1] - 1);
 			did_combine = 1;
 		}
 	}

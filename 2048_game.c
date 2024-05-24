@@ -27,6 +27,7 @@ static const char *usage =
 	"\t-m\tM\tGame mode M\n"
 	"\t\t\t[1]: Normal mode\n"
 	"\t\t\t[2]: Bomb mode (Start with a bomb tile 0 which moves but won't be combined) \n"
+	"\t\t\t[3]: Chance mode (Start with a bomb tile 0 which moves but won't be combined) \n"
 	"\t-r\tR\tRecord to file R\n"
 	"\t-p\tP\tPlay back from file P\n"
 	"\t-s\tSEED \tUse SEED for the random number generator\n"
@@ -43,7 +44,8 @@ struct game {
 // tiles for new mode
 typedef enum {
     Number,
-    Bomb
+    Bomb,
+	Chance
 } TileType;
 
 static FILE *recfile = NULL, *playfile = NULL;
@@ -80,6 +82,15 @@ int place_tile(struct game *game, TileType tile_type)
 				case Bomb:
 					lboard[i] = 15;  // Bomb num = 15
 					return 0;
+				case Chance:
+					if (random() % 10 < 1) {
+						lboard[i] = 2;
+					} else if (random() % 10 == 9) { // precentage of Chance: 1/30 
+						lboard[i] = 16; // Chance num = 16
+					} else {
+						lboard[i] = 1;
+					}
+					return 0;
 			}
 		}
 	}
@@ -92,14 +103,20 @@ void print_tile(int tile)
 		if (tile < 6) {
 			attron(A_BOLD);
 		}
-		// Bomb tile
-		if (tile == 15) {
+		if (tile == 15) { // Bomb tile
 			int pair = COLOR_PAIR(7);
 			attron(pair);
 			attron(A_BOLD);
 			printw("   X");
 			attroff(pair);
-		} else {
+		} else if (tile == 16) { // Chance tile
+			int pair = COLOR_PAIR(7);
+			attron(pair);
+			attron(A_BOLD);
+			printw("   O");
+			attroff(pair);
+		}
+		else {
 			int pair = COLOR_PAIR(1 + (tile % 6));
 			attron(pair);
 			printw("%4d", 1 << tile);
@@ -131,11 +148,24 @@ int combine_left(struct game *game, tile row[NCOLS])
 {
 	int c, did_combine = 0;
 	for (c = 1; c < NCOLS; c++) {
-		if (row[c] && row[c-1] == row[c]) {
-			row[c-1]++;
-			row[c] = 0;
-			game->score += 1 << (row[c-1] - 1);
-			did_combine = 1;
+		if (row[c]) {
+			if (row[c-1] == 16 && row[c] == 16) { // chance-chance combine -> becomes 2
+				row[c-1] = 2;
+				row[c] = 0;
+				game->score += 1 << (row[c-1] - 1);
+				did_combine = 1;
+			} else if (row[c-1] == row[c]) {
+				row[c-1]++;
+				row[c] = 0;
+				game->score += 1 << (row[c-1] - 1);
+				did_combine = 1;
+			} else if (row[c-1] == 16 || row[c] == 16) { // chance-number combine 
+				tile combined_num = row[c-1] == 16 ? row[c] : row[c-1]; // to find combined number
+				row[c-1] = combined_num + 1;
+				row[c] = 0;
+				game->score += 1 << (row[c-1] - 1);
+				did_combine = 1;
+			}
 		}
 	}
 	return did_combine;
@@ -364,7 +394,11 @@ int main(int argc, char **argv)
 		}
 
 		if (last_turn != game.turns) {
-			place_tile(&game, Number);
+			if (game_mode == 3) {  // Chance mode
+				place_tile(&game, Chance);
+			} else {
+				place_tile(&game, Number);
+			}
 			record(key, &game);
 		}
 	}

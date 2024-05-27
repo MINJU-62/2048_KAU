@@ -321,6 +321,28 @@ void record(char key, const struct game *game)
 	}
 }
 
+int high_score = 0; //최고 기록을 저장하는 전역 변수
+
+void load_high_score()
+{
+	FILE *high_score_file = fopen("high_score.txt", "r"); //high_score.txt 파일을 읽기 모드로 열기
+	if (high_score_file)
+	{
+		fscanf(high_score_file, "%d", &high_score); //파일에서 최고 기록 읽어오기
+		fclose(high_score_file); //파일 닫기
+	}	
+}
+
+void save_high_score(int score)
+{
+	FILE *high_score_file = fopen("high_score.txt", "w"); //high_score.txt 파일을 쓰기 모드로 열기
+	if (high_score_file)
+	{
+		fprintf(high_score_file, "%d", score); //파일에 최고 기록 쓰기
+		fclose(high_score_file); //파일 닫기
+	}
+}
+
 int main(int argc, char **argv)
 {
 	const char *exit_msg = "";
@@ -328,8 +350,9 @@ int main(int argc, char **argv)
 	int last_turn = game.turns;
 	time_t seed = time(NULL);
 	int opt;
-
 	int game_mode = 0;
+
+	load_high_score(); //게임 시작 시 최고 기록 불러오기
 
 	while ((opt = getopt(argc, argv, "hr:p:s:d:m:")) != -1) {
 		switch (opt) {
@@ -400,6 +423,17 @@ int main(int argc, char **argv)
 				place_tile(&game, Number);
 			}
 			record(key, &game);
+
+			if (game.score > high_score) //최고 기록을 갱신했다면?
+			{
+				high_score = game.score; //최고 기록 갱신
+				save_high_score(high_score); //해당 기록 파일에 저장
+				if (!batch_mode)
+				{
+					move(8,0);
+					printw("New high score: %d\n", high_score); //새로운 최고 기록 유저에게 알려주기
+				}
+			}
 		}
 	}
 
@@ -421,6 +455,14 @@ end:
 		"with largest tile %d\n",
 		exit_msg, game.score, game.turns,
 		1 << max_tile((tile *)game.board));
+
+	if (game.score > high_score) //게임 종료 시 최고 기록을 갱신했다면?
+	{
+		printf("Congratulations! New high score: %d\n", game.score); //게임 종료 시 새로운 최고 기록 알림
+	} else {
+		printf("High score: %d\n", high_score); //최고 기록 출력
+	}
+
 	return 0;
 }
 

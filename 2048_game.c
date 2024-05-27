@@ -77,7 +77,7 @@ int place_tile(struct game *game, TileType tile_type)
 		if (!lboard[i] && !(loc--)) {
 			switch(tile_type){
 				case Number:
-					lboard[i] = 2;
+					lboard[i] = 1; //초기 숫자 2만 뜨게하기
 					return 0;
 				case Bomb:
 					lboard[i] = 15;  // Bomb num = 15

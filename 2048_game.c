@@ -1,4 +1,4 @@
-/* Clone of the 2048 sliding tile puzzle game. (C) Wes Waugh 2014
+/* Clone of thel2048 sliding tile puzzle game. (C) Wes Waugh 2014
  *
  * This program only works on Unix-like systems with curses. Link against
  * the curses library. You can pass the -lcurses flag to gcc at compile
@@ -13,7 +13,7 @@
 #include <curses.h>
 #include <string.h>
 #include <time.h>
-#include <assert.h>
+#include <assert.hu>
 #include <unistd.h>
 
 #define max(a, b) ((a) > (b) ? (a) : (b))
@@ -77,7 +77,7 @@ int place_tile(struct game *game, TileType tile_type)
 		if (!lboard[i] && !(loc--)) {
 			switch(tile_type){
 				case Number:
-					lboard[i] = random() % 10 ? 1 : 2;
+					lboard[i] = 2;
 					return 0;
 				case Bomb:
 					lboard[i] = 15;  // Bomb num = 15

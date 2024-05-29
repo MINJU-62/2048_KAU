@@ -227,7 +227,7 @@ int combine_left(struct game *game, tile row[NCOLS])
 				row[c] = 0;
 				game->score += 4; // 점수 계산
 				did_combine = 1;
-				printw("Combined 16 and 16 to 2, score: %d\n", game->score);
+				mvprintw(10, 0, "Combined 16 and 16 to 2, score: %d\n", game->score);
 			}
 			else if (row[c - 1] == row[c])
 			{
@@ -235,7 +235,7 @@ int combine_left(struct game *game, tile row[NCOLS])
 				row[c] = 0;
 				game->score += (1 << row[c - 1]); // 점수 계산 (2^(row[c-1]))
 				did_combine = 1;
-				printw("Combined %d and %d to %d, score: %d\n", row[c - 1] - 1, row[c - 1] - 1, row[c - 1], game->score);
+				mvprintw(11, 0, "Combined %d and %d to %d, score: %d\n", row[c - 1] - 1, row[c - 1] - 1, row[c - 1], game->score);
 			}
 			else if (row[c - 1] == 16 || row[c] == 16) // 찬스 타일과 숫자 타일이 만나면 무조건 합쳐짐
 			{
@@ -244,7 +244,7 @@ int combine_left(struct game *game, tile row[NCOLS])
 				row[c] = 0;
 				game->score += (1 << (combined_num + 1)); // 점수 계산 (2^(combined_num + 1))
 				did_combine = 1;
-				printw("Combined chance and %d to %d, score: %d\n", combined_num, combined_num + 1, game->score);
+				mvprintw(12, 0, "Combined chance and %d to %d, score: %d\n", combined_num, combined_num + 1, game->score);
 			}
 		}
 	}
